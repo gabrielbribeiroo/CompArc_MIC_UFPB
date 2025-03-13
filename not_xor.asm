@@ -1,10 +1,15 @@
 NOT_XOR:
-    MAR <- SP, RD            ; Load first operand from the top of the stack
-    H <- MDR                 ; Store the first operand in register H
-    MAR <- SP + 1, RD        ; Load second operand from the stack
-    MDR <- H AND MDR         ; Perform AND between the operands
-    MAR <- SP + 2, RD        ; Get OR operand
-    MDR <- MDR OR H          ; Perform OR operation
-    MDR <- NOT MDR           ; Invert the XOR result (negation)
-    MAR <- SP, WR            ; Store the negated result back at the top of the stack
+    MAR <- SP, RD            ; Load first operand (A) from the stack
+    H <- MDR                 ; Store operand A in register H
+    MAR <- SP + 1, RD        ; Load second operand (B)
+    OPC <- MDR               ; Store operand B in OPC
+
+    H <- H OR OPC            ; Compute (A OR B), store in H
+    AC <- H                  ; Save (A OR B) in AC
+    H <- MDR AND OPC         ; Compute (A AND B)
+    H <- NOT H               ; Compute NOT (A AND B)
+    MDR <- AC AND H          ; Compute (A OR B) AND (NOT (A AND B)), result is A XOR B
+    MDR <- NOT MDR           ; Negate the result to obtain NOT (A XOR B)
+
+    MAR <- SP, WR            ; Store the negated XOR result back at the top of the stack
     PC <- PC + 1, FETCH      ; Fetch the next instruction
