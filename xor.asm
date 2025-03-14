@@ -20,3 +20,4 @@ XOR:
     MDR = AC; wr            ; Write XOR result to memory
     SP = SP - 1             ; Adjust stack pointer
     PC = PC + 1             ; Move to the next instruction
+    goto Main1              ; Return to main program
