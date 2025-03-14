@@ -1,15 +1,24 @@
 NOT_XOR:
-    MAR <- SP, RD            ; Load first operand (A) from the stack
-    H <- MDR                 ; Store operand A in register H
-    MAR <- SP + 1, RD        ; Load second operand (B)
-    OPC <- MDR               ; Store operand B in OPC
+    H = TOS                 ; Load top of stack (A) into H
+    MAR = H; rd             ; Read the value from memory
+    PC = PC + 1             ; Increment PC
+    OPC = MDR               ; Store operand A in OPC
 
-    H <- H OR OPC            ; Compute (A OR B), store in H
-    AC <- H                  ; Save (A OR B) in AC
-    H <- MDR AND OPC         ; Compute (A AND B)
-    H <- NOT H               ; Compute NOT (A AND B)
-    MDR <- AC AND H          ; Compute (A OR B) AND (NOT (A AND B)), result is A XOR B
-    MDR <- NOT MDR           ; Negate the result to obtain NOT (A XOR B)
+    H = SP - 1              ; Get second operand (B) from SP-1
+    MAR = H; rd             ; Read the value from memory
+    PC = PC + 1             ; Increment PC
+    H = MDR                 ; Store operand B in H
 
-    MAR <- SP, WR            ; Store the negated XOR result back at the top of the stack
-    PC <- PC + 1, FETCH      ; Fetch the next instruction
+    H = OPC OR H            ; Compute (A OR B)
+    AC = H                  ; Save (A OR B) in AC
+    H = OPC AND H           ; Compute (A AND B)
+    H = NOT H               ; Compute NOT (A AND B)
+    AC = AC AND H           ; Compute (A OR B) AND (NOT (A AND B)), result is A XOR B
+    AC = NOT AC             ; Negate the result to obtain NOT (A XOR B)
+
+    H = SP - 1              ; Get SP-1 to store result
+    MAR = H                 ; Prepare to write result
+    MDR = AC; wr            ; Write NOT XOR result to memory
+    SP = SP - 1             ; Adjust stack pointer
+    PC = PC + 1             ; Move to the next instruction
+    goto Main1              ; Return to main program
