@@ -1,22 +1,23 @@
 MUL:
-    MAR <- SP, RD            ; Load the first operand (multiplicand)
-    H <- MDR                 ; Store it in register H
-    MAR <- SP + 1, RD        ; Load the second operand (multiplier)
-    MDR <- MDR               ; Ensure the multiplier is in MDR
-    MAR <- SP + 1, WR        ; Save the multiplier back to the stack
-    MDR <- 0                 ; Initialize the accumulator to 0
-    MAR <- SP, WR            ; Store the accumulator in the stack
+    H = TOS                  ; Load the first operand (multiplicand) from the stack
+    MAR = H; rd              ; Read the value from memory into MDR
+    PC = PC + 1;             ; Increment program counter
+    OPC = MDR                ; Store the multiplicand in OPC
+    H = SP - 1               ; Load the second operand (multiplier) from SP-1
+    MAR = H; rd              ; Read multiplier from memory
+    PC = PC + 1;             ; Increment program counter
+    H = MDR                  ; Store multiplier in H
+    AC = 0                   ; Initialize accumulator to 0 (result)
 
-MUL_LOOP:
-    MAR <- SP + 1, RD        ; Retrieve the multiplier
-    IF MDR == 0 THEN GOTO END_MUL  ; If the multiplier is zero, exit loop
-    MAR <- SP, RD            ; Retrieve the accumulated value
-    MDR <- MDR + H           ; Add the multiplicand to the accumulator
-    MAR <- SP, WR            ; Store the updated accumulated value
-    MAR <- SP + 1, RD        ; Retrieve the multiplier again
-    MDR <- MDR - 1           ; Decrease the multiplier by 1
-    MAR <- SP + 1, WR        ; Store the updated multiplier back on the stack
-    GOTO MUL_LOOP            ; Repeat until the multiplier reaches zero
+LOOP:
+    OPC = OPC - 1            ; Decrement multiplier
+    If (OPC) < 0 goto End    ; If multiplier < 0, end loop
+    AC = AC + H              ; Add multiplicand to accumulator
+    goto LOOP                ; Repeat loop
 
-END_MUL:
-    PC <- PC + 1, FETCH      ; Move to the next instruction
+END:
+    H = SP                   ; Get stack pointer position
+    MAR = H                  ; Set memory address for result storage
+    MDR = AC; wr             ; Store multiplication result in memory
+    SP = SP - 1              ; Update stack pointer
+    goto Main1               ; Return to main program
