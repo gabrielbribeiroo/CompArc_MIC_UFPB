@@ -1,25 +1,16 @@
 MUL:
-    H = TOS                   ; Load first operand (multiplicand) from stack
-    MAR = H; rd               ; Read multiplicand from memory
-    PC = PC + 1               ; Increment PC
-    OPC = MDR                 ; Store multiplicand in OPC
-
-    H = SP - 1                ; Load second operand (multiplier) from SP-1
-    MAR = H; rd               ; Read multiplier from memory
-    PC = PC + 1               ; Increment PC
-    H = MDR                   ; Store multiplier in H
-
-    AC = 0                    ; Initialize accumulator to 0 (result)
+    OPC = TOS                 ; Load the first operand (multiplicand) from the top of the stack
+    SP = SP - 1               ; Update the stack pointer to point to the next value (multiplier)
+    MAR = SP; RD              ; Read the second operand (multiplier) from memory
+    H = MDR                   ; Store the multiplier in register H
+    AC = 0                    ; Initialize the accumulator to 0 (this will store the result)
 
 MUL_LOOP:
-    If (OPC) == 0 goto END_MUL ; If multiplier == 0, exit loop
-    AC = AC + H               ; Add multiplicand to accumulator
-    OPC = OPC - 1             ; Decrement multiplier
-    goto MUL_LOOP             ; Repeat loop
+    OPC = OPC - 1             ; Decrement the multiplicand (used as a loop counter)
+    If (OPC) < 0 goto END_MUL ; If multiplicand is less than 0, exit the loop
+    MDR = MDR + H             ; Add multiplier to the result accumulator
+    goto MUL_LOOP             ; Repeat the loop
 
 END_MUL:
-    H = SP                    ; Get stack pointer position
-    MAR = H                   ; Set memory address for result storage
-    MDR = AC; wr              ; Store multiplication result in memory
-    SP = SP - 1               ; Update stack pointer
-    goto Main1                ; Return to main program
+    TOS = MDR; WR             ; Write the final result (product) back to the top of the stack
+    goto Main1                ; Return to the main program
